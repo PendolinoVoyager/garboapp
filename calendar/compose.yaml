@@ -1,20 +1,27 @@
-services: {
+version: '3.8'
+
+services:
   db:
-    container_name: postgres
-    image: postgres
+    image: postgres:17
     environment:
-      POSTGRES_USER: pguser
+      POSTGRES_DB: calendar_local_db
+      POSTGRES_USER: root
       POSTGRES_PASSWORD: 12345678
-      PGDATA: /data/postgres
-      POSTGRES_DB: calendar
-    volumes:
-      - db:/data/postgres
     ports:
-      - "5332:5432"
-    restart: unless-stopped
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d postgres" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-}
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  testdb:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: calendar_local_test_db
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5433:5432"
+    labels:
+        org.springframework.boot.ignore: true
+
+volumes:
+  pgdata:
