@@ -1,5 +1,7 @@
 package com.garboapp.calendar;
 
+import java.util.logging.Logger;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,8 +17,9 @@ import com.garboapp.calendar.utils.NotOkResponseReasonCode;
 
 @RestController
 @RestControllerAdvice
-public class AppErrorController  {
+public class GlobalExceptionHandler  {
     
+    private static final Logger logger = Logger.getGlobal();
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<NotOkResponse> handleNotFoundError(Exception ex) {
@@ -39,6 +42,9 @@ public class AppErrorController  {
 
     @ExceptionHandler
     public ResponseEntity<NotOkResponse> handleInternalServerError(Exception ex) {
+        logger.severe("Exception occured:\n" +ex.getMessage());
+        logger.severe(ex.toString());
+       
         var res = ResponseEntity.status(500).body(NotOkResponse.builder()
              .reasonCode(NotOkResponseReasonCode.UNKNOWN_ERROR)
              .message(ex.getMessage())
