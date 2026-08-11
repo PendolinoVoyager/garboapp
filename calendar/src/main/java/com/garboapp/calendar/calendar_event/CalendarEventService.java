@@ -1,15 +1,21 @@
 package com.garboapp.calendar.calendar_event;
 
+
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import com.garboapp.calendar.calendar_event.request_response.PostCalendarEventRequest;
+import com.garboapp.calendar.calendar_event.requests.PatchCalendarEventRequest;
+import com.garboapp.calendar.calendar_event.requests.PostCalendarEventRequest;
 import com.garboapp.calendar.calendar_tag.CalendarTag;
 import com.garboapp.calendar.calendar_tag.CalendarTagService;
+
 
 
 @Service
@@ -65,6 +71,33 @@ public class CalendarEventService {
         calendar.add(Calendar.MONTH, 1);
         Date endDate = calendar.getTime();
 
-        return calendarEventRepository.findByUserIdAndEventTimeBetween(userId, startDate, endDate);
+        return calendarEventRepository.findAllByUserIdAndEventTimeBetween(userId, startDate, endDate);
+    }
+    public CalendarEvent patchCalendarEvent(Integer userId, PatchCalendarEventRequest request)
+        throws NoSuchElementException, AccessDeniedException
+    {
+        var event = calendarEventRepository.findById(request.id()).orElseThrow();
+        if (event.getUserId() != userId) {
+            throw new AccessDeniedException("User " + userId + " doesn't own event " + event.getId());
+        }
+
+        request.updateEventWithoutTags(event);
+        if (request.tags().isPresent()) {
+            List<CalendarTag> tags = calendarTagService.findOrCreateTagsByNames(request.tags().get());
+            event.setTags(new ArrayList<>(tags));
+        }
+
+        return calendarEventRepository.save(event);
+
+    }   
+
+    public Integer deleteEvent(int userId, int eventId) throws NoSuchElementException, AccessDeniedException {
+        var event = calendarEventRepository.findById(eventId).orElseThrow();
+        if (event.getUserId() != userId) {
+            throw new AccessDeniedException("User " + userId + " doesn't own event " + event.getId());
+        }
+        calendarEventRepository.delete(event);
+        return eventId;
+
     }
 }

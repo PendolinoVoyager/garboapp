@@ -15,15 +15,18 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.garboapp.calendar.calendar_event.request_response.PostCalendarEventRequest;
-import com.garboapp.calendar.calendar_tag.CalendarTag;
-import com.garboapp.calendar.calendar_tag.CalendarTagService;
+import com.garboapp.calendar.calendar_event.requests.PostCalendarEventRequest;
 import com.garboapp.calendar.config.SecurityConfig;
 
 import tools.jackson.databind.ObjectMapper;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+
+/**
+ * All tags stay empty, not testing that here and it's a bit finnicky.
+ * CalendarControllerTests
+ */
 @Import(SecurityConfig.class) // Important as Spring Security will slap authorized on all endpoints
 @WebMvcTest(CalendarEventController.class)
 public class CalendarControllerTests {
@@ -38,9 +41,6 @@ public class CalendarControllerTests {
     @MockitoBean
     private CalendarEventService calendarEventService;
 
-    @MockitoBean
-    private CalendarTagService calendarTagService;
-
    
     @Test
     public void testCreateEvent() throws Exception {
@@ -50,18 +50,18 @@ public class CalendarControllerTests {
             60,
             "My Title",
             "Im doing something in a day.",
-            List.of("Important", "Fun"),
+            null,
             false
         );
 
         var savedEvent = CalendarEvent.builder()
+        .eventTime(new Date(currentDate.getTime() + 1000 * 60 * 60))
         .duration(request.duration())
         .title(request.title())
         .details(request.details())
-        .tags(List.of(new CalendarTag(0, "Important"), new CalendarTag(1, "Fun")))
+        .tags(List.of()) 
         .build();
 
-        when(calendarTagService.createTag(any(String.class))).thenReturn(new CalendarTag(0, "Important"));
         when(calendarEventService.saveCalendarEvent(any(Integer.class), any(PostCalendarEventRequest.class)))
                 .thenReturn(savedEvent);
 
@@ -77,5 +77,30 @@ public class CalendarControllerTests {
     }
 
     @Test
-    public void testCreateEventBadRequest() {}
+    public void testCreateEventFailNoEventTime() throws Exception {
+        var request = new PostCalendarEventRequest(
+            null,
+            60,
+            "My Title",
+            "Im doing something in a day.",
+            null,
+            false
+        );
+
+        var savedEvent = CalendarEvent.builder()
+        .eventTime(new Date())
+        .duration(request.duration())
+        .title(request.title())
+        .details(request.details())
+        .tags(List.of()) 
+        .build();
+         when(calendarEventService.saveCalendarEvent(any(Integer.class), any(PostCalendarEventRequest.class)))
+                .thenReturn(savedEvent);
+        
+        mockMvc.perform(post("/api/v1/public/calendarEvents")
+            .contentType("application/json")
+            .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().is(400));
+        
+    }
 }

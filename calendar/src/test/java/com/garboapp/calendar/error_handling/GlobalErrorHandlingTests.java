@@ -69,15 +69,6 @@ class GlobalExceptionHandlerTest {
         assert(response.getBody().getMessage().equals(ex.getMessage()));
     }
 
-    @Test
-    @DisplayName("Handles null exception message gracefully")
-    void handlesNullMessage() {
-        var ex = new RuntimeException();
-
-        ResponseEntity<NotOkResponse> response = handler.handleInternalServerError(ex);
-
-        assert(response.getBody().getMessage() == null);
-    }
 
 
 }

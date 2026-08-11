@@ -1,13 +1,11 @@
 package com.garboapp.calendar.calendar_tag;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 import com.garboapp.calendar.calendar_event.CalendarEvent;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,7 +35,7 @@ public class CalendarTag {
     @Column(name = "name", nullable = false, length = 32, unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "tags", cascade = CascadeType.MERGE)
-    private final List<CalendarEvent> calendarEntries = new ArrayList<>();
+    @ManyToMany(mappedBy = "tags")
+    private List<CalendarEvent> calendarEntries;
 
 }

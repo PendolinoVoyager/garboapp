@@ -15,9 +15,10 @@ import com.garboapp.calendar.auth.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig{
 	
+
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
-	// org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http

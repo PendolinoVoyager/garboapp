@@ -4,6 +4,8 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.transaction.Transactional;
@@ -66,7 +68,7 @@ public class CalendarTagService {
              }
             return tagRepository.saveAndFlush(
                 CalendarTag.builder().name(name).build());
-        }).toList();
+        }).collect(Collectors.toList());
     }
 
 

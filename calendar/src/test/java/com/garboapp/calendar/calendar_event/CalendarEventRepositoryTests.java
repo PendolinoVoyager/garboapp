@@ -13,9 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import jakarta.validation.ConstraintViolationException;
 
 
 
@@ -47,7 +48,7 @@ public class CalendarEventRepositoryTests {
         List<CalendarEvent> savedObjectsInBetweenDates = calendarEventRepository.saveAll(List.of(ceAugust2022_1, ceAugust2022_2));
         calendarEventRepository.save(ceNotAugust2022);
         calendarEventRepository.flush();
-        List<CalendarEvent> foundObjects = calendarEventRepository.findByUserIdAndEventTimeBetween(0, startDate, endDate);
+        List<CalendarEvent> foundObjects = calendarEventRepository.findAllByUserIdAndEventTimeBetween(0, startDate, endDate);
         
         //assert
         assert(foundObjects.containsAll(savedObjectsInBetweenDates));
@@ -57,7 +58,7 @@ public class CalendarEventRepositoryTests {
     public void testCalendarEventMustHaveUserId() {
         CalendarEvent ce = CalendarEvent.builder().isAllDay(true).eventTime(new Date()).build();
 
-        assertThrows(DataIntegrityViolationException.class, () -> {
+        assertThrows(ConstraintViolationException.class, () -> {
             calendarEventRepository.save(ce);
             calendarEventRepository.flush();
         });
@@ -65,9 +66,9 @@ public class CalendarEventRepositoryTests {
 
     @Test
     public void testCalendarEventEventTimeNotNull() {
-         CalendarEvent ce = CalendarEvent.builder().isAllDay(true).build();
+        CalendarEvent ce = CalendarEvent.builder().isAllDay(true).build();
 
-        assertThrows(DataIntegrityViolationException.class, () -> {
+        assertThrows(ConstraintViolationException.class, () -> {
             calendarEventRepository.save(ce);
             calendarEventRepository.flush();
         });

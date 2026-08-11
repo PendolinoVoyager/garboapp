@@ -6,8 +6,9 @@ package com.garboapp.calendar.utils;
  * may signal the app to try and refresh the token before showing any errors. 
  * */ 
 public abstract class NotOkResponseReasonCode {
-    public static final int NOT_SPECIFIED = 0;
-    public static final int BAD_TOKEN     = 1;
-    public static final int TOKEN_EXPIRED = 2;
-    public static final int UNKNOWN_ERROR = 3;
+    public static final int NOT_SPECIFIED           = 0;
+    public static final int BAD_TOKEN               = 1;
+    public static final int TOKEN_EXPIRED           = 2;
+    public static final int DOES_NOT_OWN_RESOURCE   = 3;
+    public static final int UNKNOWN_ERROR           = 4;
 }

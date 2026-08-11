@@ -16,6 +16,6 @@ import lombok.NoArgsConstructor;
  * NotOkResponse
  */
 public class NotOkResponse {
-    private String message;
+    private Object message;
     private int reasonCode;
 }
