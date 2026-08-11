@@ -1,0 +1,23 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+<changeSet id="add-alltime-or-eventtime-check" author="Klaudia">
+    
+    <addColumn
+        tableName="calendar_events">
+        <column name="is_all_day" type="bool" />
+        
+    </addColumn>
+
+    <sql>
+        ALTER TABLE calendar_events
+        ADD CONSTRAINT chk_alltime_or_eventtime
+        CHECK (is_all_day = true OR event_time IS NOT NULL);
+    </sql>
+    <rollback>
+        <sql>ALTER TABLE calendar_event DROP CONSTRAINT chk_alltime_or_eventtime;</sql>
+    </rollback>
+</changeSet>
+</databaseChangeLog>

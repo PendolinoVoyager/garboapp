@@ -15,9 +15,10 @@ import com.garboapp.calendar.auth.JwtAuthenticationFilter;
 @EnableWebSecurity
 public class SecurityConfig{
 	
+
 	@Autowired
 	private JwtAuthenticationFilter jwtAuthenticationFilter;
-	// org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http
@@ -32,7 +33,7 @@ public class SecurityConfig{
 				.requestMatchers("/actuator/health", "/actuator/info").permitAll()
 				.requestMatchers("/actuator/**").hasAnyAuthority("ROLE_ADMIN")
 				// Rest just in case
-				.anyRequest().denyAll()
+				.anyRequest().permitAll()
 			)
 			.addFilterAfter(jwtAuthenticationFilter, BasicAuthenticationFilter.class);
 		return http.build();

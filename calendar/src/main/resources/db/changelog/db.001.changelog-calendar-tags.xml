@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- ============================================================ -->
+    <!-- calendar_tags must be created first, since calendar_events'    -->
+    <!-- join table references it via FK                              -->
+    <!-- ============================================================ -->
+    <changeSet id="001-create-calendar_tags" author="Klaudia">
+        <createTable tableName="calendar_tags">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(32)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uc_calendar_tags_name"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- ============================================================ -->
+    <!-- calendar_events                                                -->
+    <!-- ============================================================ -->
+    <changeSet id="002-create-calendar_events" author="Klaudia">
+        <createTable tableName="calendar_events">
+            <column name="id" type="INT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="details" type="VARCHAR(10000)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="DATETIME"/>
+            <column name="event_time" type="DATETIME"/>
+            <column name="duration" type="INT"/>
+        </createTable>
+    </changeSet>
+
+   
+    <!-- ============================================================ -->
+    <!-- Join table: calendar_events <-> calendar_tags                  -->
+    <!-- ============================================================ -->
+     
+    <changeSet id="004-create-calendar_event_tags" author="Klaudia">
+        <createTable tableName="calendar_event_tags">
+            <column name="calendar_event_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tag_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="005-pk-calendar_event_tags" author="Klaudia">
+        <addPrimaryKey
+                tableName="calendar_event_tags"
+                columnNames="calendar_event_id, tag_id"
+                constraintName="pk_calendar_event_tags"/>
+    </changeSet>
+
+    <changeSet id="006-fk-calendar_event_tags-event" author="Klaudia">
+        <addForeignKeyConstraint
+                baseTableName="calendar_event_tags"
+                baseColumnNames="calendar_event_id"
+                constraintName="fk_calendar_event_tags_event"
+                referencedTableName="calendar_events"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="007-fk-calendar_event_tags-tag" author="Klaudia">
+        <addForeignKeyConstraint
+                baseTableName="calendar_event_tags"
+                baseColumnNames="tag_id"
+                constraintName="fk_calendar_event_tags_tag"
+                referencedTableName="calendar_tags"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
+</databaseChangeLog>
