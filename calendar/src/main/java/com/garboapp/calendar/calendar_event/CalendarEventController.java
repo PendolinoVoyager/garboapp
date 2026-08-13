@@ -2,11 +2,13 @@ package com.garboapp.calendar.calendar_event;
 
 
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,12 +25,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.garboapp.calendar.auth.UserPrincipal;
+import com.garboapp.calendar.calendar_event.requests.FilterSearchCalendarEventRequest;
 import com.garboapp.calendar.calendar_event.requests.PatchCalendarEventRequest;
 import com.garboapp.calendar.calendar_event.requests.PostCalendarEventRequest;
 import com.garboapp.calendar.utils.NotOkResponse;
 import com.garboapp.calendar.utils.NotOkResponseReasonCode;
 
 import jakarta.servlet.ServletRequest;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 
 
 @RestController
@@ -51,15 +58,31 @@ public class CalendarEventController {
         
     }
 
-    @GetMapping
-    public ResponseEntity<Object> getCalendarEventsForUserByYearAndDate(
+ 
+    @GetMapping()
+    public ResponseEntity<Page<CalendarEventDTO>> findCalendarEventsByFilterRequest(
         @AuthenticationPrincipal UserPrincipal authPrincipal,
-        @RequestParam int year,
-        @RequestParam int month
-
+        @Validated @ModelAttribute FilterSearchCalendarEventRequest filter
+        
     ) {
-        var events = calendarEventService.getCalendarEventsByUserForYearAndMonth(authPrincipal.userId(), year, month);
-        return ResponseEntity.ok(events.stream().map(e -> new CalendarEventDTO(e)).toList());
+        var page = calendarEventService.handleFilterSearch(authPrincipal.userId(), filter);
+        Page<CalendarEventDTO> pageDto = page.map(event -> new CalendarEventDTO(event));
+        return ResponseEntity.ok(pageDto);
+    }
+    @GetMapping("/byYearAndMonth")
+    public ResponseEntity<List<CalendarEventDTO>> findCalendarEventsByYearAndMonth(
+        @AuthenticationPrincipal UserPrincipal authPrincipal,
+        @RequestParam(name = "year") @Validated @NotNull Integer year,
+        @RequestParam(name = "month") @Validated @NotNull @Min(1) @Max(12) Integer month
+
+        
+    ) {
+        List<CalendarEvent> events = calendarEventService.handleCalendarEventsByUserForYearAndMonth(authPrincipal.userId(), year, month);
+        
+        return ResponseEntity.ok(events.stream()
+                                .map(e -> new CalendarEventDTO(e))
+                                .toList()
+        );
     }
 
     @PatchMapping
@@ -75,6 +98,8 @@ public class CalendarEventController {
             );
     }
 
+
+    
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<NotOkResponse> handleNoSuchElementException(NoSuchElementException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
